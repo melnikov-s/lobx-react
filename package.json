@@ -1,13 +1,13 @@
 {
-  "name": "mobx-react-lite",
+  "name": "lobx-react-lite",
   "version": "2.0.6",
-  "description": "Lightweight React bindings for MobX based on React 16.8+ and Hooks",
+  "description": "Lightweight React bindings for lobx based on React 16.8+ and Hooks",
   "main": "dist/index.js",
-  "jsnext:main": "dist/mobxreactlite.esm.js",
-  "module": "dist/mobxreactlite.esm.js",
-  "unpkg": "dist/mobxreactlite.umd.production.min.js",
-  "jsdelivr": "dist/mobxreactlite.umd.production.min.js",
-  "react-native": "dist/mobxreactlite.esm.js",
+  "jsnext:main": "dist/lobxreactlite.esm.js",
+  "module": "dist/lobxreactlite.esm.js",
+  "unpkg": "dist/lobxreactlite.umd.production.min.js",
+  "jsdelivr": "dist/lobxreactlite.umd.production.min.js",
+  "react-native": "dist/lobxreactlite.esm.js",
   "typings": "dist/index.d.ts",
   "types": "dist/index.d.ts",
   "sideEffects": [
@@ -15,7 +15,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/mobxjs/mobx-react-lite.git"
+    "url": "https://github.com/melnikov-s/lobx-react-lite.git"
   },
   "files": [
     "dist/*",
@@ -31,18 +31,18 @@
     "coverage": "jest --coverage",
     "prebuild": "rimraf dist",
     "build": "yarn bundle",
-    "bundle": "tsdx build --name mobxReactLite --format=cjs,esm,umd --tsconfig tsconfig.build.json",
+    "bundle": "tsdx build --name lobxReactLite --format=cjs,esm,umd --tsconfig tsconfig.build.json",
     "dedup": "npx yarn-deduplicate -s fewer yarn.lock",
     "release": "node publish.js"
   },
   "author": "Daniel K.",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mobxjs/mobx-react-lite/issues"
+    "url": "https://github.com/melnikov-s/lobx-react-lite/issues"
   },
-  "homepage": "https://mobx-react.js.org",
+  "homepage": "https://lobx-react.js.org",
   "peerDependencies": {
-    "mobx": "^4.0.0 || ^5.0.0",
+    "lobx": "^0.1.0",
     "react": "^16.8.0"
   },
   "devDependencies": {
@@ -66,7 +66,7 @@
     "jest": "24.9.0",
     "jest-environment-jsdom": "24.9.0",
     "jest-mock-console": "1.0.0",
-    "mobx": "5.14.0",
+    "lobx": "^0.1.0",
     "prettier": "^1.19.1",
     "pretty-quick": "^2.0.1",
     "prompts": "^2.3.2",
@@ -82,7 +82,7 @@
     "typescript": "3.6.4"
   },
   "keywords": [
-    "mobx",
+    "lobx",
     "mobservable",
     "react-component",
     "react",

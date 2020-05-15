@@ -1,27 +1,27 @@
-import * as mobx from "mobx"
+import { transaction, autorun, computed, observable } from "lobx"
 import * as React from "react"
 import { act, render } from "@testing-library/react"
 
 import { observer } from "../src"
 
-test("mobx issue 50", done => {
+test("lobx issue 50", done => {
     const foo = {
-        a: mobx.observable.box(true),
-        b: mobx.observable.box(false),
-        c: mobx.computed((): boolean => {
+        a: observable.box(true),
+        b: observable.box(false),
+        c: computed((): boolean => {
             // console.log("evaluate c")
             return foo.b.get()
         })
     }
     function flipStuff() {
-        mobx.transaction(() => {
+        transaction(() => {
             foo.a.set(!foo.a.get())
             foo.b.set(!foo.b.get())
         })
     }
     let asText = ""
     let willReactCount = 0
-    mobx.autorun(() => (asText = [foo.a.get(), foo.b.get(), foo.c.get()].join(":")))
+    autorun(() => (asText = [foo.a.get(), foo.b.get(), foo.c.get()].join(":")))
     const Test = observer(() => {
         willReactCount++
         return <div id="x">{[foo.a.get(), foo.b.get(), foo.c.get()].join(",")}</div>
@@ -41,8 +41,8 @@ test("mobx issue 50", done => {
 })
 
 it("should respect transaction", async () => {
-    const a = mobx.observable.box(2)
-    const loaded = mobx.observable.box(false)
+    const a = observable.box(2)
+    const loaded = observable.box(false)
     const valuesSeen = [] as number[]
 
     const Component = observer(() => {
@@ -56,7 +56,7 @@ it("should respect transaction", async () => {
     const { container } = render(<Component />)
 
     act(() => {
-        mobx.transaction(() => {
+        transaction(() => {
             a.set(3)
             a.set(4)
             loaded.set(true)

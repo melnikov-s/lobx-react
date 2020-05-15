@@ -1,21 +1,21 @@
 import { act, cleanup, render } from "@testing-library/react"
 import mockConsole from "jest-mock-console"
-import * as mobx from "mobx"
+import * as lobx from "lobx"
 import * as React from "react"
 import ReactDOM from "react-dom"
 
 import { useObserver } from "../src"
-import {
+/*import {
     CLEANUP_LEAKED_REACTIONS_AFTER_MILLIS,
     CLEANUP_TIMER_LOOP_MILLIS,
     forceCleanupTimerToRunNowForTests,
     resetCleanupScheduleForTests
-} from "../src/reactionCleanupTracking"
+} from "../src/reactionCleanupTracking"*/
 
 afterEach(cleanup)
 
 test("uncommitted observing components should not attempt state changes", () => {
-    const store = mobx.observable({ count: 0 })
+    const store = lobx.observable({ count: 0 })
 
     const TestComponent = () => useObserver(() => <div>{store.count}</div>)
 
@@ -53,7 +53,7 @@ strictModeValues.forEach(strictMode => {
     const modeName = strictMode ? "StrictMode" : "non-StrictMode"
 
     test(`observable changes before first commit are not lost (${modeName})`, () => {
-        const store = mobx.observable({ value: "initial" })
+        const store = lobx.observable({ value: "initial" })
 
         const TestComponent = () => useObserver(() => <div>{store.value}</div>)
 
@@ -82,7 +82,7 @@ strictModeValues.forEach(strictMode => {
     })
 })
 
-test("uncommitted components should not leak observations", async () => {
+/*test("uncommitted components should not leak observations", async () => {
     resetCleanupScheduleForTests()
 
     // Unfortunately, Jest fake timers don't mock out Date.now, so we fake
@@ -91,15 +91,15 @@ test("uncommitted components should not leak observations", async () => {
     jest.useFakeTimers()
     jest.spyOn(Date, "now").mockImplementation(() => fakeNow)
 
-    const store = mobx.observable({ count1: 0, count2: 0 })
+    const store = lobx.observable({ count1: 0, count2: 0 })
 
     // Track whether counts are observed
     let count1IsObserved = false
     let count2IsObserved = false
-    mobx.onBecomeObserved(store, "count1", () => (count1IsObserved = true))
-    mobx.onBecomeUnobserved(store, "count1", () => (count1IsObserved = false))
-    mobx.onBecomeObserved(store, "count2", () => (count2IsObserved = true))
-    mobx.onBecomeUnobserved(store, "count2", () => (count2IsObserved = false))
+    lobx.onBecomeObserved(store, "count1", () => (count1IsObserved = true))
+    lobx.onBecomeUnobserved(store, "count1", () => (count1IsObserved = false))
+    lobx.onBecomeObserved(store, "count2", () => (count2IsObserved = true))
+    lobx.onBecomeUnobserved(store, "count2", () => (count2IsObserved = false))
 
     const TestComponent1 = () => useObserver(() => <div>{store.count1}</div>)
     const TestComponent2 = () => useObserver(() => <div>{store.count2}</div>)
@@ -134,7 +134,7 @@ test("cleanup timer should not clean up recently-pended reactions", () => {
     // 1. Component instance A is being created; it renders, we put its reaction R1 into the cleanup list
     // 2. Strict/Concurrent mode causes that render to be thrown away
     // 3. Component instance A is being created; it renders, we put its reaction R2 into the cleanup list
-    // 4. The MobX reaction timer from 5 seconds ago kicks in and cleans up all reactions from uncommitted
+    // 4. The lobx reaction timer from 5 seconds ago kicks in and cleans up all reactions from uncommitted
     //    components, including R1 and R2
     // 5. The commit phase runs for component A, but reaction R2 has already been disposed. Game over.
 
@@ -147,12 +147,12 @@ test("cleanup timer should not clean up recently-pended reactions", () => {
     jest.useFakeTimers()
     jest.spyOn(Date, "now").mockImplementation(() => fakeNow)
 
-    const store = mobx.observable({ count: 0 })
+    const store = lobx.observable({ count: 0 })
 
     // Track whether the count is observed
     let countIsObserved = false
-    mobx.onBecomeObserved(store, "count", () => (countIsObserved = true))
-    mobx.onBecomeUnobserved(store, "count", () => (countIsObserved = false))
+    lobx.onBecomeObserved(store, "count", () => (countIsObserved = true))
+    lobx.onBecomeUnobserved(store, "count", () => (countIsObserved = false))
 
     const TestComponent1 = () => useObserver(() => <div>{store.count}</div>)
 
@@ -216,12 +216,12 @@ test("component should recreate reaction if necessary", () => {
     jest.useFakeTimers()
     jest.spyOn(Date, "now").mockImplementation(() => fakeNow)
 
-    const store = mobx.observable({ count: 0 })
+    const store = lobx.observable({ count: 0 })
 
     // Track whether the count is observed
     let countIsObserved = false
-    mobx.onBecomeObserved(store, "count", () => (countIsObserved = true))
-    mobx.onBecomeUnobserved(store, "count", () => (countIsObserved = false))
+    lobx.onBecomeObserved(store, "count", () => (countIsObserved = true))
+    lobx.onBecomeUnobserved(store, "count", () => (countIsObserved = false))
 
     const TestComponent1 = () => useObserver(() => <div>{store.count}</div>)
 
@@ -265,4 +265,4 @@ test("component should recreate reaction if necessary", () => {
     // show the latest value, which was set whilst it
     // wasn't even looking.
     expect(rootNode.textContent).toContain("42")
-})
+}) */

@@ -1,8 +1,6 @@
-import { Reaction } from "mobx"
+import { listener } from "lobx"
 import React from "react"
 
-import { isObserverBatched } from "./observerBatching"
-import { printDebugValue } from "./printDebugValue"
 import {
     createTrackingData,
     IReactionTracking,
@@ -20,12 +18,6 @@ export interface IUseObserverOptions {
 
 const EMPTY_OBJECT = {}
 
-function observerComponentNameFor(baseComponentName: string) {
-    return `observer${baseComponentName}`
-}
-
-let warnedAboutBatching = false
-
 export function useObserver<T>(
     fn: () => T,
     baseComponentName: string = "observed",
@@ -33,13 +25,6 @@ export function useObserver<T>(
 ): T {
     if (isUsingStaticRendering()) {
         return fn()
-    }
-
-    if (__DEV__ && !warnedAboutBatching && !isObserverBatched()) {
-        console.warn(
-            `[MobX] You haven't configured observer batching which might result in unexpected behavior in some cases. See more at https://github.com/mobxjs/mobx-react-lite/#observer-batching`
-        )
-        warnedAboutBatching = true
     }
 
     const wantedForceUpdateHook = options.useForceUpdate || useForceUpdate
@@ -54,7 +39,7 @@ export function useObserver<T>(
         // First render for this component (or first time since a previous
         // reaction from an abandoned render was disposed).
 
-        const newReaction = new Reaction(observerComponentNameFor(baseComponentName), () => {
+        const newReaction = listener(() => {
             // Observable has changed, meaning we want to re-render
             // BUT if we're a component that hasn't yet got to the useEffect()
             // stage, we might be a component that _started_ to render, but
@@ -78,7 +63,6 @@ export function useObserver<T>(
     }
 
     const { reaction } = reactionTrackingRef.current!
-    React.useDebugValue(reaction, printDebugValue)
 
     React.useEffect(() => {
         // Called on first mount only
@@ -98,7 +82,7 @@ export function useObserver<T>(
 
             // Re-create the reaction
             reactionTrackingRef.current = {
-                reaction: new Reaction(observerComponentNameFor(baseComponentName), () => {
+                reaction: listener(() => {
                     // We've definitely already been mounted at this point
                     forceUpdate()
                 }),

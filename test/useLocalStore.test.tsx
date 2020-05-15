@@ -1,12 +1,12 @@
 import mockConsole from "jest-mock-console"
-import * as mobx from "mobx"
+import * as lobx from "lobx"
 import * as React from "react"
 import { renderHook } from "@testing-library/react-hooks"
 import { act, cleanup, fireEvent, render } from "@testing-library/react"
 
 import { Observer, observer, useLocalStore, useObserver } from "../src"
 import { useEffect, useState } from "react"
-import { autorun } from "mobx"
+import { autorun, enforceActions } from "lobx"
 import { enableDevEnvironment } from "./utils"
 
 afterEach(cleanup)
@@ -91,7 +91,7 @@ describe("is used to keep observable within component body", () => {
     })
 
     it("works with observer as well", () => {
-        const spyObservable = jest.spyOn(mobx, "observable")
+        const spyObservable = jest.spyOn(lobx, "observable")
 
         let renderCount = 0
 
@@ -116,7 +116,7 @@ describe("is used to keep observable within component body", () => {
         fireEvent.click(div)
         expect(div.textContent).toBe("3-2")
 
-        // though render 3 times, mobx.observable only called once
+        // though render 3 times, lobx.observable only called once
         expect(renderCount).toBe(3)
         expect(spyObservable.mock.calls.length).toBe(1)
 
@@ -151,7 +151,7 @@ describe("is used to keep observable within component body", () => {
                 x: 1,
                 y: 2,
                 get z() {
-                    return obs.x + obs.y
+                    return this.x + this.y
                 }
             }))
             return <div onClick={() => (obs.x += 1)}>{obs.z}</div>
@@ -172,7 +172,7 @@ describe("is used to keep observable within component body", () => {
                     return this.x
                 },
                 get z() {
-                    return this.getMeThatX() + obs.y
+                    return this.getMeThatX() + this.y
                 }
             }))
             return <div onClick={() => (obs.x += 1)}>{obs.z}</div>
@@ -432,7 +432,7 @@ describe("is used to keep observable within component body", () => {
                 ;(container.querySelector("#incmultiplier")! as any).click()
             })
             expect(container.querySelector("span")!.innerHTML).toBe("22")
-            expect(counterRender).toBe(4) // TODO: should be 3
+            expect(counterRender).toBe(3)
         })
     })
 
@@ -507,7 +507,7 @@ describe("enforcing stable source", () => {
 
 describe("enforcing actions", () => {
     it("'never' should work", () => {
-        mobx.configure({ enforceActions: "never" })
+        enforceActions(false)
         const { result } = renderHook(() => {
             const [multiplier, setMultiplier] = React.useState(2)
             useLocalStore(
@@ -527,7 +527,7 @@ describe("enforcing actions", () => {
         expect(result.error).not.toBeDefined()
     })
     it("only when 'observed' should work", () => {
-        mobx.configure({ enforceActions: "observed" })
+        enforceActions(true)
         const { result } = renderHook(() => {
             const [multiplier, setMultiplier] = React.useState(2)
             useLocalStore(
@@ -545,25 +545,6 @@ describe("enforcing actions", () => {
             useEffect(() => setMultiplier(3), [])
         })
         expect(result.error).not.toBeDefined()
-    })
-    it("'always' should work", () => {
-        mobx.configure({ enforceActions: "always" })
-        const { result } = renderHook(() => {
-            const [multiplier, setMultiplier] = React.useState(2)
-            useLocalStore(
-                props => ({
-                    count: 10,
-                    get multiplied() {
-                        return props.multiplier * this.count
-                    },
-                    inc() {
-                        this.count += 1
-                    }
-                }),
-                { multiplier }
-            )
-            useEffect(() => setMultiplier(3), [])
-        })
-        expect(result.error).not.toBeDefined()
+        enforceActions(false)
     })
 })

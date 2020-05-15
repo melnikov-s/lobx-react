@@ -1,11 +1,9 @@
 import { act, cleanup, fireEvent, render } from "@testing-library/react"
 import mockConsole from "jest-mock-console"
-import * as mobx from "mobx"
+import { observable, transaction, type } from "lobx"
 import * as React from "react"
 
 import { observer, useObserver, useStaticRendering } from "../src"
-
-const getDNode = (obj: any, prop?: string) => mobx._getAdministration(obj, prop)
 
 afterEach(cleanup)
 
@@ -29,7 +27,7 @@ function runTestSuite(mode: "observer" | "useObserver") {
     describe(`nestedRendering - ${mode}`, () => {
         const execute = () => {
             // init element
-            const store = mobx.observable({
+            const store = observable({
                 todos: [
                     {
                         completed: false,
@@ -53,7 +51,7 @@ function runTestSuite(mode: "observer" | "useObserver") {
                 return (
                     <div>
                         <span>{store.todos.length}</span>
-                        {store.todos.map((todo, idx) => (
+                        {store.todos.map((todo: any, idx: number) => (
                             <TodoItem key={idx} todo={todo} />
                         ))}
                     </div>
@@ -80,8 +78,6 @@ function runTestSuite(mode: "observer" | "useObserver") {
             expect(renderings.item).toBe(2)
             expect(getAllByText("1")).toHaveLength(1)
             expect(getAllByText("|aa")).toHaveLength(1)
-            expect(getDNode(store, "todos").observers.size).toBe(1)
-            expect(getDNode(store.todos[0], "title").observers.size).toBe(1)
         })
 
         test("rerendering with outer store added", () => {
@@ -97,26 +93,21 @@ function runTestSuite(mode: "observer" | "useObserver") {
             expect(getAllByText("|b")).toHaveLength(1)
             expect(renderings.list).toBe(2)
             expect(renderings.item).toBe(2)
-            expect(getDNode(store.todos[1], "title").observers.size).toBe(1)
-            expect(getDNode(store.todos[1], "completed").observers.size).toBe(0)
         })
 
         test("rerendering with outer store pop", () => {
             const { store, container, renderings } = execute()
-            let oldTodo
             act(() => {
-                oldTodo = store.todos.pop()
+                store.todos.pop()
             })
             expect(renderings.list).toBe(2)
             expect(renderings.item).toBe(1)
             expect(container.querySelectorAll("li").length).toBe(0)
-            expect(getDNode(oldTodo, "title").observers.size).toBe(0)
-            expect(getDNode(oldTodo, "completed").observers.size).toBe(0)
         })
     })
 
     describe("isObjectShallowModified detects when React will update the component", () => {
-        const store = mobx.observable({ count: 0 })
+        const store = observable({ count: 0 })
         let counterRenderings = 0
         const Counter = obsComponent(function TodoItem() {
             counterRenderings++
@@ -135,15 +126,22 @@ function runTestSuite(mode: "observer" | "useObserver") {
 
     describe("keep views alive", () => {
         const execute = () => {
-            const data = mobx.observable({
-                x: 3,
-                yCalcCount: 0,
-                get y() {
-                    this.yCalcCount++
-                    return this.x * 2
+            const data = observable.configure(
+                {
+                    x: type.observable,
+                    z: type.observable,
+                    y: type.computed
                 },
-                z: "hi"
-            })
+                {
+                    x: 3,
+                    yCalcCount: 0,
+                    get y() {
+                        this.yCalcCount++
+                        return this.x * 2
+                    },
+                    z: "hi"
+                }
+            )
             const TestComponent = obsComponent(() => {
                 return (
                     <div>
@@ -175,7 +173,7 @@ function runTestSuite(mode: "observer" | "useObserver") {
         const execute = () => {
             useStaticRendering(true)
             let renderCount = 0
-            const data = mobx.observable({
+            const data = observable({
                 z: "hi"
             })
 
@@ -204,13 +202,12 @@ function runTestSuite(mode: "observer" | "useObserver") {
             })
             expect(getRenderCount()).toBe(1)
             expect(getByText("hi")).toBeTruthy()
-            expect(getDNode(data, "z").observers.size).toBe(0)
         })
     })
 
     describe("issue 12", () => {
         const createData = () =>
-            mobx.observable({
+            observable({
                 selected: "coffee",
                 items: [
                     {
@@ -258,7 +255,7 @@ function runTestSuite(mode: "observer" | "useObserver") {
             const data = createData()
             const { container } = render(<Table data={data} />)
             act(() => {
-                mobx.transaction(() => {
+                transaction(() => {
                     data.items[1].name = "boe"
                     data.items.splice(0, 2, { name: "soup" })
                     data.selected = "tea"
@@ -270,14 +267,17 @@ function runTestSuite(mode: "observer" | "useObserver") {
 
     test("changing state in render should fail", () => {
         // This test is most likely obsolete ... exception is not thrown
-        const data = mobx.observable.box(2)
+        const data = observable.box(2)
         const Comp = obsComponent(() => {
             if (data.get() === 3) {
                 try {
                     data.set(4) // wouldn't throw first time for lack of observers.. (could we tighten this?)
                 } catch (err) {
+                    console.log(err)
                     expect(
-                        /Side effects like changing state are not allowed at this point/.test(err)
+                        /Can't change an observable during a reaction or within a computed/.test(
+                            err
+                        )
                     ).toBeTruthy()
                 }
             }
@@ -288,7 +288,6 @@ function runTestSuite(mode: "observer" | "useObserver") {
             data.set(3)
         })
         expect(container).toMatchSnapshot()
-        mobx._resetGlobalState()
     })
 
     describe("should render component even if setState called with exactly the same props", () => {
@@ -328,7 +327,7 @@ function runTestSuite(mode: "observer" | "useObserver") {
         const execute = () => {
             let renderCount = 0
             const createProps = () => {
-                const odata = mobx.observable({ x: 1 })
+                const odata = observable({ x: 1 })
                 const data = { y: 1 }
                 function doStuff() {
                     data.y++
@@ -385,7 +384,7 @@ function runTestSuite(mode: "observer" | "useObserver") {
                 parent: 0
             }
             const data = { x: 1 }
-            const odata = mobx.observable({ y: 1 })
+            const odata = observable({ y: 1 })
 
             const Child = obsComponent((props: any) => {
                 renderings.child++
@@ -420,7 +419,7 @@ function runTestSuite(mode: "observer" | "useObserver") {
 
     describe("error handling", () => {
         test("errors should propagate", () => {
-            const x = mobx.observable.box(1)
+            const x = observable.box(1)
             const errorsSeen: any[] = []
 
             class ErrorBoundary extends React.Component {
@@ -541,29 +540,6 @@ test("useImperativeHandle and forwardRef should work with useObserver", () => {
     expect(typeof cr.current!.focus).toBe("function")
 })
 
-it("should only called new Reaction once", () => {
-    let renderCount = 0
-    // mock the Reaction class
-    const spy = jest.spyOn(mobx, "Reaction" as any).mockImplementation(() => ({
-        track: (fn: any) => {
-            fn()
-        },
-        dispose: () => {
-            /* nothing */
-        }
-    }))
-    const TestComponent = observer((props: any) => {
-        renderCount++
-        return <div />
-    })
-    const { rerender } = render(<TestComponent a="1" />)
-    rerender(<TestComponent a="2" />)
-    rerender(<TestComponent a="3" />)
-    expect(renderCount).toBe(3)
-    expect(spy.mock.calls.length).toBe(1)
-    spy.mockRestore()
-})
-
 it("should hoist known statics only", () => {
     function isNumber() {
         return null
@@ -605,19 +581,18 @@ test("parent / childs render in the right order", done => {
         public name = "User's name"
     }
 
-    mobx.decorate(User, { name: mobx.observable })
-
-    class Store {
-        public user: User | null = new User()
-        public logout() {
-            this.user = null
+    const Store = observable.configure(
+        {
+            user: type.observable,
+            logout: type.action
+        },
+        class Store {
+            public user: User | null = new User()
+            public logout() {
+                this.user = null
+            }
         }
-    }
-
-    mobx.decorate(Store, {
-        user: mobx.observable,
-        logout: mobx.action
-    })
+    )
 
     const store = new Store()
 
@@ -788,95 +763,3 @@ it("should keep original props types", () => {
 
     // this test has no `expect` calls as it verifies whether such component compiles or not
 })
-
-// describe("206 - @observer should produce usefull errors if it throws", () => {
-//     const data = mobx.observable({ x: 1 })
-//     let renderCount = 0
-
-//     const emmitedErrors = []
-//     const disposeErrorsHandler = onError(error => {
-//         emmitedErrors.push(error)
-//     })
-
-//     @observer
-//     class Child extends React.Component {
-//         render() {
-//             renderCount++
-//             if (data.x === 42) throw new Error("Oops!")
-//             return <span>{data.x}</span>
-//         }
-//     }
-
-//     beforeAll(async done => {
-//         await asyncReactDOMRender(<Child />, testRoot)
-//         done()
-//     })
-
-//     test("init renderCount should === 1", () => {
-//         expect(renderCount).toBe(1)
-//     })
-
-//     test("catch exception", () => {
-//         expect(() => {
-//             withConsole(() => {
-//                 data.x = 42
-//             })
-//         }).toThrow(/Oops!/)
-//         expect(renderCount).toBe(3) // React fiber will try to replay the rendering, so the exception gets thrown a second time
-//     })
-
-//     test("component recovers!", async () => {
-//         await sleepHelper(500)
-//         data.x = 3
-//         TestUtils.renderIntoDocument(<Child />)
-//         expect(renderCount).toBe(4)
-//         expect(emmitedErrors).toEqual([new Error("Oops!"), new Error("Oops!")]) // see above comment
-//     })
-// })
-
-// test("195 - async componentWillMount does not work", async () => {
-//     const renderedValues = []
-
-//     @observer
-//     class WillMount extends React.Component {
-//         @mobx.observable
-//         counter = 0
-
-//         @mobx.action
-//         inc = () => this.counter++
-
-//         componentWillMount() {
-//             setTimeout(() => this.inc(), 300)
-//         }
-
-//         render() {
-//             renderedValues.push(this.counter)
-//             return (
-//                 <p>
-//                     {this.counter}
-//                     <button onClick={this.inc}>+</button>
-//                 </p>
-//             )
-//         }
-//     }
-//     TestUtils.renderIntoDocument(<WillMount />)
-
-//     await sleepHelper(500)
-//     expect(renderedValues).toEqual([0, 1])
-// })
-
-// test.skip("195 - should throw if trying to overwrite lifecycle methods", () => {
-//     // Test disabled, see #231...
-
-//     @observer
-//     class WillMount extends React.Component {
-//         componentWillMount = () => {}
-
-//         render() {
-//             return null
-//         }
-//     }
-//     expect(TestUtils.renderIntoDocument(<WillMount />)).toThrow(
-//         /Cannot assign to read only property 'componentWillMount'/
-//     )
-// })

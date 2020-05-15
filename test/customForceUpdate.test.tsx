@@ -1,4 +1,4 @@
-import { observable } from "mobx"
+import { observable } from "lobx"
 import * as React from "react"
 import { act, cleanup, render } from "@testing-library/react"
 import { IUseObserverOptions, useForceUpdate, useObserver } from "../src"

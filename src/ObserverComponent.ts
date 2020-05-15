@@ -32,7 +32,7 @@ function ObserverPropsCheck(
     const hasExtraProp = typeof props[extraKey] === "function"
     if (hasProp && hasExtraProp) {
         return new Error(
-            "MobX Observer: Do not use children and render in the same time in`" + componentName
+            "lobx Observer: Do not use children and render in the same time in`" + componentName
         )
     }
 

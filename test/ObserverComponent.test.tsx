@@ -1,5 +1,5 @@
 import mockConsole from "jest-mock-console"
-import * as mobx from "mobx"
+import { observable } from "lobx"
 import * as React from "react"
 import { act, cleanup, render } from "@testing-library/react"
 
@@ -9,7 +9,7 @@ afterEach(cleanup)
 
 describe("regions should rerender component", () => {
     const execute = () => {
-        const data = mobx.observable.box("hi")
+        const data = observable.box("hi")
         const Comp = () => (
             <div>
                 <Observer>{() => <span>{data.get()}</span>}</Observer>

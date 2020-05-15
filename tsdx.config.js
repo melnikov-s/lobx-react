@@ -6,7 +6,7 @@ module.exports = {
                 ...config.output,
                 globals: {
                     react: "React",
-                    mobx: "mobx"
+                    lobx: "lobx"
                 }
             }
         }

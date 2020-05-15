@@ -1,7 +1,7 @@
-import { configure } from "mobx"
+import { enforceActions } from "lobx"
 
-export function resetMobx(): void {
-    configure({ enforceActions: "never" })
+export function resetlobx(): void {
+    enforceActions(false)
 }
 
 declare namespace global {

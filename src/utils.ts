@@ -28,7 +28,7 @@ export function getSymbol(name: string): symbol | string {
     if (typeof Symbol === "function") {
         return Symbol.for(name)
     }
-    return `__$mobx-react ${name}__`
+    return `__$lobx-react ${name}__`
 }
 
 declare const window: any

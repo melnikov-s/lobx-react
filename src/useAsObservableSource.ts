@@ -1,4 +1,4 @@
-import { observable, runInAction } from "mobx"
+import { observable, runInAction } from "lobx"
 import React from "react"
 
 import { isPlainObject } from "./utils"
@@ -26,7 +26,7 @@ export function useAsObservableSourceInternal<TSource>(
         )
     }
 
-    const [res] = React.useState(() => observable(current, {}, { deep: false }))
+    const [res] = React.useState(() => observable(current as any, {}))
     if (__DEV__ && Object.keys(res).length !== Object.keys(current).length) {
         throw new Error(`the shape of objects passed to ${culprit} should be stable`)
     }

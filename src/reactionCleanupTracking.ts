@@ -1,8 +1,8 @@
-import { Reaction } from "mobx"
+import { Listener } from "lobx"
 
 export interface IReactionTracking {
     /** The Reaction created during first render, which may be leaked */
-    reaction: Reaction
+    reaction: Listener
     /**
      * The time (in ticks) at which point we should dispose of the reaction
      * if this component hasn't yet been fully mounted.
@@ -22,7 +22,7 @@ export interface IReactionTracking {
     changedBeforeMount?: boolean
 }
 
-export function createTrackingData(reaction: Reaction) {
+export function createTrackingData(reaction: Listener) {
     const trackingData: IReactionTracking = {
         cleanAt: Date.now() + CLEANUP_LEAKED_REACTIONS_AFTER_MILLIS,
         reaction
@@ -104,7 +104,7 @@ function cleanUncommittedReactions() {
 
 /* istanbul ignore next */
 /**
- * Only to be used by test functions; do not export outside of mobx-react-lite
+ * Only to be used by test functions; do not export outside of lobx-react-lite
  */
 export function forceCleanupTimerToRunNowForTests() {
     // This allows us to control the execution of the cleanup timer

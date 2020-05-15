@@ -1,4 +1,4 @@
-import { observable, runInAction, transaction } from "mobx"
+import { observable, runInAction, transaction } from "lobx"
 import React from "react"
 
 import { useAsObservableSourceInternal } from "./useAsObservableSource"
