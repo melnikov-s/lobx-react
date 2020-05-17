@@ -5,12 +5,12 @@ import * as React from "react"
 import ReactDOM from "react-dom"
 
 import { useObserver } from "../src"
-/*import {
+import {
     CLEANUP_LEAKED_REACTIONS_AFTER_MILLIS,
     CLEANUP_TIMER_LOOP_MILLIS,
     forceCleanupTimerToRunNowForTests,
     resetCleanupScheduleForTests
-} from "../src/reactionCleanupTracking"*/
+} from "../src/reactionCleanupTracking"
 
 afterEach(cleanup)
 
@@ -82,7 +82,7 @@ strictModeValues.forEach(strictMode => {
     })
 })
 
-/*test("uncommitted components should not leak observations", async () => {
+test("uncommitted components should not leak observations", async () => {
     resetCleanupScheduleForTests()
 
     // Unfortunately, Jest fake timers don't mock out Date.now, so we fake
@@ -96,10 +96,14 @@ strictModeValues.forEach(strictMode => {
     // Track whether counts are observed
     let count1IsObserved = false
     let count2IsObserved = false
-    lobx.onBecomeObserved(store, "count1", () => (count1IsObserved = true))
-    lobx.onBecomeUnobserved(store, "count1", () => (count1IsObserved = false))
-    lobx.onBecomeObserved(store, "count2", () => (count2IsObserved = true))
-    lobx.onBecomeUnobserved(store, "count2", () => (count2IsObserved = false))
+
+    lobx.onObservedStateChange(store, "count1", observing => {
+        count1IsObserved = observing
+    })
+
+    lobx.onObservedStateChange(store, "count2", observing => {
+        count2IsObserved = observing
+    })
 
     const TestComponent1 = () => useObserver(() => <div>{store.count1}</div>)
     const TestComponent2 = () => useObserver(() => <div>{store.count2}</div>)
@@ -151,8 +155,9 @@ test("cleanup timer should not clean up recently-pended reactions", () => {
 
     // Track whether the count is observed
     let countIsObserved = false
-    lobx.onBecomeObserved(store, "count", () => (countIsObserved = true))
-    lobx.onBecomeUnobserved(store, "count", () => (countIsObserved = false))
+    lobx.onObservedStateChange(store, "count", observing => {
+        countIsObserved = observing
+    })
 
     const TestComponent1 = () => useObserver(() => <div>{store.count}</div>)
 
@@ -220,8 +225,9 @@ test("component should recreate reaction if necessary", () => {
 
     // Track whether the count is observed
     let countIsObserved = false
-    lobx.onBecomeObserved(store, "count", () => (countIsObserved = true))
-    lobx.onBecomeUnobserved(store, "count", () => (countIsObserved = false))
+    lobx.onObservedStateChange(store, "count", observing => {
+        countIsObserved = observing
+    })
 
     const TestComponent1 = () => useObserver(() => <div>{store.count}</div>)
 
@@ -265,4 +271,4 @@ test("component should recreate reaction if necessary", () => {
     // show the latest value, which was set whilst it
     // wasn't even looking.
     expect(rootNode.textContent).toContain("42")
-}) */
+})
