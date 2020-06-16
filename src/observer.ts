@@ -3,25 +3,25 @@ import { forwardRef, memo } from "react"
 import { isUsingStaticRendering } from "./staticRendering"
 import { useObserver } from "./useObserver"
 
-export interface IObserverOptions {
+export interface ObserverOptions {
     readonly forwardRef?: boolean
 }
 
 export function observer<P extends object, TRef = {}>(
     baseComponent: React.RefForwardingComponent<TRef, P>,
-    options: IObserverOptions & { forwardRef: true }
+    options: ObserverOptions & { forwardRef: true }
 ): React.MemoExoticComponent<
     React.ForwardRefExoticComponent<React.PropsWithoutRef<P> & React.RefAttributes<TRef>>
 >
 
 export function observer<P extends object>(
     baseComponent: React.FunctionComponent<P>,
-    options?: IObserverOptions
+    options?: ObserverOptions
 ): React.FunctionComponent<P>
 
 export function observer<
     C extends React.FunctionComponent<any> | React.RefForwardingComponent<any>,
-    Options extends IObserverOptions
+    Options extends ObserverOptions
 >(
     baseComponent: C,
     options?: Options
@@ -39,7 +39,7 @@ export function observer<
 // n.b. base case is not used for actual typings or exported in the typing files
 export function observer<P extends object, TRef = {}>(
     baseComponent: React.RefForwardingComponent<TRef, P>,
-    options?: IObserverOptions
+    options?: ObserverOptions
 ) {
     // The working of observer is explained step by step in this talk: https://www.youtube.com/watch?v=cPF4iBedoF0&feature=youtu.be&t=1307
     if (isUsingStaticRendering()) {
@@ -79,7 +79,7 @@ export function observer<P extends object, TRef = {}>(
 }
 
 // based on https://github.com/mridgway/hoist-non-react-statics/blob/master/src/index.js
-const hoistBlackList: any = {
+const hoistBlockList: any = {
     $$typeof: true,
     render: true,
     compare: true,
@@ -88,7 +88,7 @@ const hoistBlackList: any = {
 
 function copyStaticProperties(base: any, target: any) {
     Object.keys(base).forEach(key => {
-        if (!hoistBlackList[key]) {
+        if (!hoistBlockList[key]) {
             Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(base, key)!)
         }
     })

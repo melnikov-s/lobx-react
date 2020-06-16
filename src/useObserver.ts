@@ -1,27 +1,37 @@
-import { listener } from "lobx"
+import { listener, onTransactionDone } from "lobx"
 import React from "react"
 
 import {
     createTrackingData,
-    IReactionTracking,
+    ReactionTracking,
     recordReactionAsCommitted,
     scheduleCleanupOfReactionIfLeaked
 } from "./reactionCleanupTracking"
 import { isUsingStaticRendering } from "./staticRendering"
 import { useForceUpdate } from "./utils"
+import { unstable_batchedUpdates } from "react-dom"
 
 export type ForceUpdateHook = () => () => void
 
-export interface IUseObserverOptions {
+export interface UseObserverOptions {
     useForceUpdate?: ForceUpdateHook
 }
 
 const EMPTY_OBJECT = {}
 
+const pendingReactions: Set<() => void> = new Set()
+
+onTransactionDone(() => {
+    unstable_batchedUpdates(() => {
+        pendingReactions.forEach(fn => fn())
+    })
+    pendingReactions.clear()
+})
+
 export function useObserver<T>(
     fn: () => T,
     baseComponentName: string = "observed",
-    options: IUseObserverOptions = EMPTY_OBJECT
+    options: UseObserverOptions = EMPTY_OBJECT
 ): T {
     if (isUsingStaticRendering()) {
         return fn()
@@ -33,7 +43,7 @@ export function useObserver<T>(
     // StrictMode/ConcurrentMode/Suspense may mean that our component is
     // rendered and abandoned multiple times, so we need to track leaked
     // Reactions.
-    const reactionTrackingRef = React.useRef<IReactionTracking | null>(null)
+    const reactionTrackingRef = React.useRef<ReactionTracking | null>(null)
 
     if (!reactionTrackingRef.current) {
         // First render for this component (or first time since a previous
@@ -47,11 +57,12 @@ export function useObserver<T>(
             // (It triggers warnings in StrictMode, for a start.)
             if (trackingData.mounted) {
                 // We have reached useEffect(), so we're mounted, and can trigger an update
-                forceUpdate()
+                pendingReactions.add(forceUpdate)
             } else {
                 // We haven't yet reached useEffect(), so we'll need to trigger a re-render
                 // when (and if) useEffect() arrives.  The easiest way to do that is just to
                 // drop our current reaction and allow useEffect() to recreate it.
+                pendingReactions.delete(forceUpdate)
                 newReaction.dispose()
                 reactionTrackingRef.current = null
             }
@@ -84,7 +95,7 @@ export function useObserver<T>(
             reactionTrackingRef.current = {
                 reaction: listener(() => {
                     // We've definitely already been mounted at this point
-                    forceUpdate()
+                    pendingReactions.add(forceUpdate)
                 }),
                 cleanAt: Infinity
             }
@@ -92,6 +103,7 @@ export function useObserver<T>(
         }
 
         return () => {
+            pendingReactions.delete(forceUpdate)
             reactionTrackingRef.current!.reaction.dispose()
             reactionTrackingRef.current = null
         }

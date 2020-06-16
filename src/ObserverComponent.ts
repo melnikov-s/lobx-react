@@ -1,11 +1,11 @@
 import { useObserver } from "./useObserver"
 
-interface IObserverProps {
+interface ObserverProps {
     children?(): React.ReactElement<any>
     render?(): React.ReactElement<any>
 }
 
-function ObserverComponent({ children, render }: IObserverProps) {
+function ObserverComponent({ children, render }: ObserverProps) {
     const component = children || render
     if (typeof component !== "function") {
         return null

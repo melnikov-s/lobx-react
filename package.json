@@ -1,10 +1,9 @@
 {
-  "name": "lobx-react-lite",
-  "version": "2.0.6",
+  "name": "lobx-react",
+  "version": "0.1.0",
   "description": "Lightweight React bindings for lobx based on React 16.8+ and Hooks",
   "main": "dist/index.js",
-  "jsnext:main": "dist/lobxreactlite.esm.js",
-  "module": "dist/lobxreactlite.esm.js",
+
   "unpkg": "dist/lobxreactlite.umd.production.min.js",
   "jsdelivr": "dist/lobxreactlite.umd.production.min.js",
   "react-native": "dist/lobxreactlite.esm.js",
@@ -15,7 +14,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/melnikov-s/lobx-react-lite.git"
+    "url": "https://github.com/melnikov-s/lobx-react.git"
   },
   "files": [
     "dist/*",
@@ -38,16 +37,15 @@
   "author": "Daniel K.",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/melnikov-s/lobx-react-lite/issues"
+    "url": "https://github.com/melnikov-s/lobx-react/issues"
   },
-  "homepage": "https://lobx-react.js.org",
   "peerDependencies": {
-    "lobx": "^0.1.0",
+    "lobx": "^0.2.0",
     "react": "^16.8.0"
   },
   "devDependencies": {
-    "@babel/core": "7.8.4",
-    "@babel/preset-env": "7.8.4",
+    "@babel/core": "7.10.2",
+    "@babel/preset-env": "7.10.2",
     "@size-limit/preset-small-lib": "2.1.6",
     "@size-limit/time": "2.1.6",
     "@testing-library/jest-dom": "4.1.2",
@@ -63,7 +61,7 @@
     "eslint": "^6.1.0",
     "eslint-plugin-react": "^7.18.3",
     "husky": "3.0.9",
-    "jest": "24.9.0",
+    "jest": "26.0.1",
     "jest-environment-jsdom": "24.9.0",
     "jest-mock-console": "1.0.0",
     "lobx": "^0.1.0",
@@ -79,11 +77,10 @@
     "shx": "0.3.2",
     "ts-jest": "24.1.0",
     "tsdx": "0.12.3",
-    "typescript": "3.6.4"
+    "typescript": "3.9.3"
   },
   "keywords": [
     "lobx",
-    "mobservable",
     "react-component",
     "react",
     "reactjs",

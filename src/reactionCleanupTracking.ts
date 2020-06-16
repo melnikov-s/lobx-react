@@ -1,6 +1,6 @@
 import { Listener } from "lobx"
 
-export interface IReactionTracking {
+export interface ReactionTracking {
     /** The Reaction created during first render, which may be leaked */
     reaction: Listener
     /**
@@ -23,7 +23,7 @@ export interface IReactionTracking {
 }
 
 export function createTrackingData(reaction: Listener) {
-    const trackingData: IReactionTracking = {
+    const trackingData: ReactionTracking = {
         cleanAt: Date.now() + CLEANUP_LEAKED_REACTIONS_AFTER_MILLIS,
         reaction
     }
@@ -46,7 +46,7 @@ export const CLEANUP_TIMER_LOOP_MILLIS = 10_000
 /**
  * Reactions created by components that have yet to be fully mounted.
  */
-const uncommittedReactionRefs: Set<React.MutableRefObject<IReactionTracking | null>> = new Set()
+const uncommittedReactionRefs: Set<React.MutableRefObject<ReactionTracking | null>> = new Set()
 
 /**
  * Latest 'uncommitted reactions' cleanup timer handle.
@@ -60,7 +60,7 @@ function ensureCleanupTimerRunning() {
 }
 
 export function scheduleCleanupOfReactionIfLeaked(
-    ref: React.MutableRefObject<IReactionTracking | null>
+    ref: React.MutableRefObject<ReactionTracking | null>
 ) {
     uncommittedReactionRefs.add(ref)
 
@@ -68,7 +68,7 @@ export function scheduleCleanupOfReactionIfLeaked(
 }
 
 export function recordReactionAsCommitted(
-    reactionRef: React.MutableRefObject<IReactionTracking | null>
+    reactionRef: React.MutableRefObject<ReactionTracking | null>
 ) {
     uncommittedReactionRefs.delete(reactionRef)
 }
