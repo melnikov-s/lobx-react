@@ -1,6 +1,6 @@
 {
   "name": "lobx-react",
-  "version": "0.1.0",
+  "version": "0.1.0-rc1",
   "description": "Lightweight React bindings for lobx based on React 16.8+ and Hooks",
   "main": "dist/index.js",
 
@@ -40,7 +40,7 @@
     "url": "https://github.com/melnikov-s/lobx-react/issues"
   },
   "peerDependencies": {
-    "lobx": "^0.2.0",
+    "lobx": "0.2.0-rc1",
     "react": "^16.8.0"
   },
   "devDependencies": {
