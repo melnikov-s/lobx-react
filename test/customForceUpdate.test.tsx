@@ -1,7 +1,7 @@
 import { observable } from "lobx"
 import * as React from "react"
 import { act, cleanup, render } from "@testing-library/react"
-import { IUseObserverOptions, useForceUpdate, useObserver } from "../src"
+import { UseObserverOptions, useForceUpdate, useObserver } from "../src"
 
 afterEach(cleanup)
 
@@ -15,14 +15,14 @@ it("a custom force update method can be used", () => {
             update()
         }
     }
-    const opts: IUseObserverOptions = {
+    const opts: UseObserverOptions = {
         useForceUpdate: useCustomForceUpdate
     }
 
     const obs = observable.box(0)
 
     const TestComponent = () => {
-        return useObserver(() => <div>{obs.get()}</div>, undefined, opts)
+        return useObserver(() => <div>{obs.get()}</div>, opts)
     }
 
     render(<TestComponent />)

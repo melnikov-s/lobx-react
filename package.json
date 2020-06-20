@@ -4,9 +4,9 @@
   "description": "Lightweight React bindings for lobx based on React 16.8+ and Hooks",
   "main": "dist/index.js",
 
-  "unpkg": "dist/lobxreactlite.umd.production.min.js",
-  "jsdelivr": "dist/lobxreactlite.umd.production.min.js",
-  "react-native": "dist/lobxreactlite.esm.js",
+  "unpkg": "dist/lobxreact.umd.production.min.js",
+  "jsdelivr": "dist/lobxreact.umd.production.min.js",
+  "react-native": "dist/lobxreact.esm.js",
   "typings": "dist/index.d.ts",
   "types": "dist/index.d.ts",
   "sideEffects": [
@@ -30,7 +30,7 @@
     "coverage": "jest --coverage",
     "prebuild": "rimraf dist",
     "build": "yarn bundle",
-    "bundle": "tsdx build --name lobxReactLite --format=cjs,esm,umd --tsconfig tsconfig.build.json",
+    "bundle": "tsdx build --name lobxreact --format=cjs,esm,umd --tsconfig tsconfig.build.json",
     "dedup": "npx yarn-deduplicate -s fewer yarn.lock",
     "release": "node publish.js"
   },
@@ -64,7 +64,7 @@
     "jest": "26.0.1",
     "jest-environment-jsdom": "24.9.0",
     "jest-mock-console": "1.0.0",
-    "lobx": "^0.1.0",
+    "lobx": "0.2.0-rc1",
     "prettier": "^1.19.1",
     "pretty-quick": "^2.0.1",
     "prompts": "^2.3.2",

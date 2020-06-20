@@ -83,7 +83,7 @@ function cleanUncommittedReactions() {
     // than CLEANUP_LEAKED_REACTIONS_AFTER_MILLIS get tidied.
 
     const now = Date.now()
-    for (const ref of uncommittedReactionRefs) {
+    uncommittedReactionRefs.forEach(ref => {
         const tracking = ref.current
         if (tracking) {
             if (now >= tracking.cleanAt) {
@@ -93,7 +93,7 @@ function cleanUncommittedReactions() {
                 uncommittedReactionRefs.delete(ref)
             }
         }
-    }
+    })
 
     if (uncommittedReactionRefs.size > 0) {
         // We've just finished a round of cleanups but there are still
@@ -104,7 +104,7 @@ function cleanUncommittedReactions() {
 
 /* istanbul ignore next */
 /**
- * Only to be used by test functions; do not export outside of lobx-react-lite
+ * Only to be used by test functions; do not export outside of lobx-react
  */
 export function forceCleanupTimerToRunNowForTests() {
     // This allows us to control the execution of the cleanup timer

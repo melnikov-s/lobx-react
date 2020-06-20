@@ -1,16 +1,18 @@
 import { useObserver } from "./useObserver"
+import { Graph } from "lobx"
 
 interface ObserverProps {
     children?(): React.ReactElement<any>
     render?(): React.ReactElement<any>
+    graph?: Graph
 }
 
-function ObserverComponent({ children, render }: ObserverProps) {
+function ObserverComponent({ children, render, graph }: ObserverProps) {
     const component = children || render
     if (typeof component !== "function") {
         return null
     }
-    return useObserver(component)
+    return useObserver(component, { graph })
 }
 ObserverComponent.propTypes = {
     children: ObserverPropsCheck,

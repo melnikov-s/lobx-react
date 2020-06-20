@@ -54,7 +54,7 @@ export function observer<P extends object, TRef = {}>(
     const baseComponentName = baseComponent.displayName || baseComponent.name
 
     const wrappedComponent = (props: P, ref: React.Ref<TRef>) => {
-        return useObserver(() => baseComponent(props, ref), baseComponentName)
+        return useObserver(() => baseComponent(props, ref))
     }
     wrappedComponent.displayName = baseComponentName
 

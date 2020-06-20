@@ -273,7 +273,6 @@ function runTestSuite(mode: "observer" | "useObserver") {
                 try {
                     data.set(4) // wouldn't throw first time for lack of observers.. (could we tighten this?)
                 } catch (err) {
-                    console.log(err)
                     expect(
                         /Can't change an observable during a reaction or within a computed/.test(
                             err
