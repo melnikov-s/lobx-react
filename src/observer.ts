@@ -1,10 +1,12 @@
 import { forwardRef, memo } from "react"
 
+import { Graph } from "lobx"
 import { isUsingStaticRendering } from "./staticRendering"
 import { useObserver } from "./useObserver"
 
 export interface ObserverOptions {
     readonly forwardRef?: boolean
+    graph?: Graph
 }
 
 export function observer<P extends object, TRef = {}>(
@@ -54,7 +56,7 @@ export function observer<P extends object, TRef = {}>(
     const baseComponentName = baseComponent.displayName || baseComponent.name
 
     const wrappedComponent = (props: P, ref: React.Ref<TRef>) => {
-        return useObserver(() => baseComponent(props, ref))
+        return useObserver(() => baseComponent(props, ref), options && { graph: options?.graph })
     }
     wrappedComponent.displayName = baseComponentName
 
