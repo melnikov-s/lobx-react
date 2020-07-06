@@ -25,6 +25,8 @@ const pendingReactionsMap: WeakMap<
     { reactions: Set<() => void>; unsub?: () => void }
 > = new WeakMap()
 
+let isReacting = false
+
 function addPendingReaction(reaction: () => void, graph: Graph): void {
     let pendingReactionsData = pendingReactionsMap.get(graph)
     if (!pendingReactionsData) {
@@ -36,11 +38,19 @@ function addPendingReaction(reaction: () => void, graph: Graph): void {
 
     if (reactions.size === 0) {
         pendingReactionsData!.unsub = graph.onTransactionDone(() => {
-            unstable_batchedUpdates(() => {
-                reactions!.forEach(fn => fn())
-            })
-            reactions!.clear()
-            pendingReactionsData!.unsub!()
+            if (reactions.size > 0 && !isReacting) {
+                try {
+                    // if a reaction causes further transactions we ignore those
+                    isReacting = true
+                    unstable_batchedUpdates(() => {
+                        reactions!.forEach(fn => fn())
+                    })
+                } finally {
+                    isReacting = false
+                    reactions!.clear()
+                    pendingReactionsData!.unsub!()
+                }
+            }
         })
     }
 
