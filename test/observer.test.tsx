@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render } from "@testing-library/react"
 import mockConsole from "jest-mock-console"
-import { observable, transaction, type } from "lobx"
+import { observable, batch, type } from "lobx"
 import * as React from "react"
 
 import { observer, useObserver, useStaticRendering } from "../src"
@@ -255,7 +255,7 @@ function runTestSuite(mode: "observer" | "useObserver") {
             const data = createData()
             const { container } = render(<Table data={data} />)
             act(() => {
-                transaction(() => {
+                batch(() => {
                     data.items[1].name = "boe"
                     data.items.splice(0, 2, { name: "soup" })
                     data.selected = "tea"

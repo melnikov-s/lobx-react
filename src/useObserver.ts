@@ -37,7 +37,7 @@ function addPendingReaction(reaction: () => void, graph: Graph): void {
     const { reactions } = pendingReactionsData
 
     if (reactions.size === 0) {
-        pendingReactionsData!.unsub = graph.onTransactionDone(() => {
+        pendingReactionsData!.unsub = graph.onReactionsComplete(() => {
             if (reactions.size > 0 && !isReacting) {
                 try {
                     // if a reaction causes further transactions we ignore those
