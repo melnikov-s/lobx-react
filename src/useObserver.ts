@@ -1,4 +1,4 @@
-import { listener, Graph, getDefaultGraph } from "lobx"
+import { Graph, getDefaultGraph, Scheduler, createScheduler } from "lobx"
 import React from "react"
 
 import {
@@ -20,50 +20,15 @@ export interface UseObserverOptions {
 
 const EMPTY_OBJECT = {}
 
-const pendingReactionsMap: WeakMap<
-    Graph,
-    { reactions: Set<() => void>; unsub?: () => void }
-> = new WeakMap()
+const schedulerMap: WeakMap<Graph, Scheduler> = new WeakMap()
 
-let isReacting = false
-
-function addPendingReaction(reaction: () => void, graph: Graph): void {
-    let pendingReactionsData = pendingReactionsMap.get(graph)
-    if (!pendingReactionsData) {
-        pendingReactionsData = { reactions: new Set() }
-        pendingReactionsMap.set(graph, pendingReactionsData)
+function getSchduler(graph: Graph): Scheduler {
+    let scheduler = schedulerMap.get(graph)
+    if (!scheduler) {
+        scheduler = createScheduler(fn => unstable_batchedUpdates(fn))
+        schedulerMap.set(graph, scheduler)
     }
-
-    const { reactions } = pendingReactionsData
-
-    if (reactions.size === 0) {
-        pendingReactionsData!.unsub = graph.onReactionsComplete(() => {
-            if (reactions.size > 0 && !isReacting) {
-                try {
-                    // if a reaction causes further transactions we ignore those
-                    isReacting = true
-                    unstable_batchedUpdates(() => {
-                        reactions!.forEach(fn => fn())
-                    })
-                } finally {
-                    isReacting = false
-                    reactions!.clear()
-                    pendingReactionsData!.unsub!()
-                }
-            }
-        })
-    }
-
-    reactions.add(reaction)
-}
-
-function deletePendingReaction(reaction: () => void, graph: Graph): void {
-    const pendingReactions = pendingReactionsMap.get(graph)
-
-    pendingReactions?.reactions.delete(reaction)
-    if (pendingReactions?.reactions.size === 0) {
-        pendingReactions.unsub?.()
-    }
+    return scheduler
 }
 
 export function useObserver<T>(fn: () => T, options: UseObserverOptions = EMPTY_OBJECT): T {
@@ -74,6 +39,7 @@ export function useObserver<T>(fn: () => T, options: UseObserverOptions = EMPTY_
     const wantedForceUpdateHook = options.useForceUpdate || useForceUpdate
     const graph = options.graph || getDefaultGraph()
     const forceUpdate = wantedForceUpdateHook()
+    const scheduler = getSchduler(graph)
 
     // StrictMode/ConcurrentMode/Suspense may mean that our component is
     // rendered and abandoned multiple times, so we need to track leaked
@@ -84,27 +50,23 @@ export function useObserver<T>(fn: () => T, options: UseObserverOptions = EMPTY_
         // First render for this component (or first time since a previous
         // reaction from an abandoned render was disposed).
 
-        const newReaction = listener(
-            () => {
-                // Observable has changed, meaning we want to re-render
-                // BUT if we're a component that hasn't yet got to the useEffect()
-                // stage, we might be a component that _started_ to render, but
-                // got dropped, and we don't want to make state changes then.
-                // (It triggers warnings in StrictMode, for a start.)
-                if (trackingData.mounted) {
-                    // We have reached useEffect(), so we're mounted, and can trigger an update
-                    addPendingReaction(forceUpdate, graph)
-                } else {
-                    // We haven't yet reached useEffect(), so we'll need to trigger a re-render
-                    // when (and if) useEffect() arrives.  The easiest way to do that is just to
-                    // drop our current reaction and allow useEffect() to recreate it.
-                    deletePendingReaction(forceUpdate, graph)
-                    newReaction.dispose()
-                    reactionTrackingRef.current = null
-                }
-            },
-            { graph }
-        )
+        const newReaction = scheduler.listener(() => {
+            // Observable has changed, meaning we want to re-render
+            // BUT if we're a component that hasn't yet got to the useEffect()
+            // stage, we might be a component that _started_ to render, but
+            // got dropped, and we don't want to make state changes then.
+            // (It triggers warnings in StrictMode, for a start.)
+            if (trackingData.mounted) {
+                // We have reached useEffect(), so we're mounted, and can trigger an update
+                forceUpdate()
+            } else {
+                // We haven't yet reached useEffect(), so we'll need to trigger a re-render
+                // when (and if) useEffect() arrives.  The easiest way to do that is just to
+                // drop our current reaction and allow useEffect() to recreate it.
+                newReaction.dispose()
+                reactionTrackingRef.current = null
+            }
+        })
 
         const trackingData = createTrackingData(newReaction)
         reactionTrackingRef.current = trackingData
@@ -131,20 +93,16 @@ export function useObserver<T>(fn: () => T, options: UseObserverOptions = EMPTY_
 
             // Re-create the reaction
             reactionTrackingRef.current = {
-                reaction: listener(
-                    () => {
-                        // We've definitely already been mounted at this point
-                        addPendingReaction(forceUpdate, graph)
-                    },
-                    { graph }
-                ),
+                reaction: scheduler.listener(() => {
+                    // We've definitely already been mounted at this point
+                    forceUpdate()
+                }),
                 cleanAt: Infinity
             }
             forceUpdate()
         }
 
         return () => {
-            deletePendingReaction(forceUpdate, graph)
             reactionTrackingRef.current!.reaction.dispose()
             reactionTrackingRef.current = null
         }
