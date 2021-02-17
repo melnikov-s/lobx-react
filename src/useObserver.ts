@@ -25,7 +25,7 @@ const schedulerMap: WeakMap<Graph, Scheduler> = new WeakMap()
 function getSchduler(graph: Graph): Scheduler {
     let scheduler = schedulerMap.get(graph)
     if (!scheduler) {
-        scheduler = createScheduler(fn => unstable_batchedUpdates(fn))
+        scheduler = createScheduler(fn => unstable_batchedUpdates(fn), { graph })
         schedulerMap.set(graph, scheduler)
     }
     return scheduler

@@ -1,6 +1,6 @@
 {
   "name": "lobx-react",
-  "version": "0.1.0-rc7",
+  "version": "0.1.0-rc8",
   "description": "Lightweight React bindings for lobx based on React 16.8+ and Hooks",
   "main": "dist/index.js",
   "unpkg": "dist/lobxreact.umd.production.min.js",
